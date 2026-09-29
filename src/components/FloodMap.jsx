@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { CircleHelp, LocateFixed, Minus, Plus, Satellite, X } from 'lucide-react';
+import { CircleHelp, LocateFixed, Map, Minus, Plus, X } from 'lucide-react';
 import L from 'leaflet';
 import { GeoJSON, MapContainer, TileLayer, ZoomControl, useMap } from 'react-leaflet';
 import { getCoordinates } from '../data/eonet.js';
@@ -19,7 +19,7 @@ function formatDate(value) {
     .format(new Date(value)) + ' UTC';
 }
 
-export default function FloodMap({ events, selected, onSelect, imageryDate }) {
+export default function FloodMap({ events, selected, onSelect }) {
   const collection = useMemo(() => ({
     type: 'FeatureCollection',
     features: events.map((event) => event.feature),
@@ -31,10 +31,9 @@ export default function FloodMap({ events, selected, onSelect, imageryDate }) {
     <section className="map-frame" aria-label="الخريطة العالمية لأحداث الفيضانات">
       <MapContainer center={[18, 8]} zoom={2} minZoom={2} maxZoom={9} zoomControl={false} worldCopyJump>
         <TileLayer
-          attribution='<a href="https://www.earthdata.nasa.gov/data/tools/gibs">NASA GIBS</a> / MODIS Terra'
-          url={`https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${imageryDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`}
-          maxNativeZoom={9}
-          maxZoom={9}
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
         />
         {events.length > 0 && (
           <GeoJSON
@@ -61,7 +60,7 @@ export default function FloodMap({ events, selected, onSelect, imageryDate }) {
       </MapContainer>
 
       <div className="map-topline">
-        <div className="map-label"><span className="map-label-mark"><Satellite size={16} /></span><span>مراقبة سطح الأرض</span><span className="map-label-separator">/</span><span>العالم</span></div>
+        <div className="map-label"><span className="map-label-mark"><Map size={16} /></span><span>الخريطة المرجعية</span><span className="map-label-separator">/</span><span>العالم</span></div>
       </div>
 
       <div className="map-coordinate-note"><LocateFixed size={14} /> {selectedCoordinates ? `${selectedCoordinates[1].toFixed(3)}° ، ${selectedCoordinates[0].toFixed(3)}°` : 'اسحب الخريطة لاستكشاف العالم'}</div>
@@ -101,7 +100,7 @@ export default function FloodMap({ events, selected, onSelect, imageryDate }) {
         </aside>
       )}
 
-      <div className="map-footnote"><span>NASA GIBS · MODIS Terra · {imageryDate}</span></div>
+      <div className="map-footnote"><span>OpenStreetMap · الخريطة المرجعية</span></div>
     </section>
   );
 }

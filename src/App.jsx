@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Activity, ArrowDownLeft, ArrowUpLeft, Clock3, ExternalLink, Globe2, Orbit, RefreshCw, Satellite, Waves } from 'lucide-react';
 import FloodMap from './components/FloodMap.jsx';
-import { EONET_API_URL, EONET_CATEGORY_URL, fetchFloodEvents, getLatestEvent, GIBS_INFO_URL } from './data/eonet.js';
+import { EONET_API_URL, EONET_CATEGORY_URL, fetchFloodEvents, getLatestEvent } from './data/eonet.js';
 
 function formatTime(value) {
   if (!value) return '—';
@@ -11,12 +11,6 @@ function formatTime(value) {
 function formatEventDate(value) {
   if (!value) return 'لا يوجد رصد في النتيجة الحالية';
   return new Intl.DateTimeFormat('ar', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'UTC' }).format(new Date(value)) + ' UTC';
-}
-
-function getImageryDate() {
-  const date = new Date();
-  date.setUTCDate(date.getUTCDate() - 2);
-  return date.toISOString().slice(0, 10);
 }
 
 function StatusPill({ status, fetchedAt, onRetry }) {
@@ -41,7 +35,6 @@ export default function App() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState(null);
-  const imageryDate = useMemo(getImageryDate, []);
   const events = data?.events ?? [];
   const latestEvent = getLatestEvent(events);
 
@@ -104,12 +97,12 @@ export default function App() {
         <div className="hero-copy">
           <div className="hero-kicker"><span className="kicker-line" /> أرشيف الأرض · NASA OPEN DATA</div>
           <h1>راقب الفيضانات<br /><span>من الفضاء.</span></h1>
-          <p>استكشف أرشيف أحداث الفيضانات المكتملة في NASA EONET، واقرأ المشهد الأرضي عبر صور الأقمار الصناعية من NASA GIBS.</p>
+          <p>استكشف أرشيف أحداث الفيضانات المكتملة في NASA EONET على خريطة OpenStreetMap المرجعية.</p>
           <a className="hero-action" href="#map">استكشف الخريطة <ArrowDownLeft size={16} /></a>
         </div>
         <div className="hero-aside" aria-label="بيانات تعريف المنصة">
           <div className="orbit-graphic"><span className="orbit-ring orbit-ring-one" /><span className="orbit-ring orbit-ring-two" /><span className="orbit-center"><Waves size={26} /></span><span className="orbit-satellite" /></div>
-          <div className="hero-aside-caption"><span>EARTH OBSERVATION SYSTEM</span><strong>قراءة موثّقة، لا تنبؤات.</strong><small>بيانات الحدث والصورة الفضائية مصدران منفصلان.</small></div>
+          <div className="hero-aside-caption"><span>EARTH OBSERVATION SYSTEM</span><strong>قراءة موثّقة، لا تنبؤات.</strong><small>سجل الأحداث والخريطة المرجعية مصدران منفصلان.</small></div>
         </div>
         <div className="hero-index"><span>01</span><span className="index-rule" /><span>GLOBAL FLOOD WATCH</span></div>
       </section>
@@ -131,7 +124,7 @@ export default function App() {
         {status === 'loading' && !data && <div className="loading-strip"><span className="loading-line" /><span>جارٍ تحميل أرشيف NASA EONET…</span></div>}
 
         <div className="map-layout">
-          <FloodMap events={mapEvents} selected={selected} onSelect={setSelected} imageryDate={imageryDate} />
+          <FloodMap events={mapEvents} selected={selected} onSelect={setSelected} />
           <aside className="map-rail">
             <div className="rail-heading"><div><span className="eyebrow">الطبقة النشطة</span><h3>أحداث الفيضانات</h3></div><span className="rail-count">{status === 'ready' ? events.length.toLocaleString('ar') : '—'}</span></div>
             <div className="rail-source"><span className="source-emblem"><Waves size={17} /></span><div><strong>NASA EONET</strong><small>سجل أحداث طبيعية · تصنيف Floods</small></div><a href={EONET_CATEGORY_URL} target="_blank" rel="noreferrer" aria-label="تعريف تصنيف الفيضانات"><ExternalLink size={14} /></a></div>
@@ -142,14 +135,14 @@ export default function App() {
             <div className="rail-bottom"><span className="rail-pulse" /><span>النقاط تمثل آخر هندسة مسجلة للحدث، لا مساحة الغمر.</span></div>
           </aside>
         </div>
-        <div className="map-legend"><span className="legend-dot" /><span>حدث مصنف كفيضان في EONET</span><span className="legend-divider" /><span className="legend-image"><Satellite size={13} /></span><span>صورة NASA GIBS تُعرض كسياق بصري فقط</span></div>
+        <div className="map-legend"><span className="legend-dot" /><span>حدث مصنف كفيضان في EONET</span><span className="legend-divider" /><span>OpenStreetMap خريطة مرجعية فقط</span></div>
       </section>
 
       <section className="trust-section" id="sources">
-        <div className="trust-title"><span className="eyebrow">شفافية المصدر</span><h2>مصادر البيانات</h2><p>كل طبقة تحتفظ باسمها ومصدرها الأصلي. الصور الفضائية لا تُصنّف وحدها كفيضانات.</p></div>
+        <div className="trust-title"><span className="eyebrow">شفافية المصدر</span><h2>مصادر البيانات</h2><p>سجل الفيضانات والخريطة المرجعية مصدران منفصلان، والخريطة ليست مصدرًا لتصنيف الأحداث.</p></div>
         <div className="source-grid">
           <article className="source-card"><div className="source-card-top"><span className="source-number">01</span><span className="source-card-icon"><Waves size={18} /></span></div><h3>NASA EONET</h3><p>أرشيف أحداث الفيضانات المكتملة؛ يعرض الموقع هندسة الحدث وتاريخها وروابط الجهات الأصلية التي يوردها السجل.</p><div className="source-meta"><span>النوع</span><strong>أحداث مكانية · Floods</strong></div><div className="source-meta"><span>آخر جلب</span><strong>{status === 'ready' ? formatTime(data.fetchedAt) : 'لا توجد استجابة ناجحة'}</strong></div><a href={EONET_API_URL} target="_blank" rel="noreferrer">واجهة الأحداث الرسمية <ExternalLink size={14} /></a></article>
-          <article className="source-card source-card-image"><div className="source-card-top"><span className="source-number">02</span><span className="source-card-icon"><Satellite size={18} /></span></div><h3>NASA GIBS · MODIS Terra</h3><p>طبقة انعكاس مرئي حقيقي لتصوير سطح الأرض، وليست قناع غمر أو قياسًا لمساحة الفيضانات.</p><div className="source-meta"><span>التاريخ المعروض</span><strong>{imageryDate} · طلب صور يومي</strong></div><div className="source-meta"><span>الدقة الزمنية</span><strong>صور يومية؛ التوفر حسب المنتج</strong></div><a href={GIBS_INFO_URL} target="_blank" rel="noreferrer">بوابة NASA GIBS <ExternalLink size={14} /></a></article>
+          <article className="source-card source-card-map"><div className="source-card-top"><span className="source-number">02</span><span className="source-card-icon"><Globe2 size={18} /></span></div><h3>OpenStreetMap</h3><p>خريطة مرجعية لتحديد المواقع والسياق الجغرافي؛ لا تصنّف الفيضانات ولا توفر بيانات الأحداث.</p><div className="source-meta"><span>الاستخدام</span><strong>خلفية جغرافية فقط</strong></div><div className="source-meta"><span>الإسناد</span><strong>© OpenStreetMap contributors</strong></div><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">حقوق واستخدام الخريطة <ExternalLink size={14} /></a></article>
         </div>
       </section>
 
@@ -164,7 +157,7 @@ export default function App() {
         <div className="raw-note"><div className="raw-note-icon"><Activity size={17} /></div><p><strong>البيانات الخام</strong> هي الأحداث والهندسة والتواريخ التي أرجعها NASA EONET. <strong>المعلومات المعروضة</strong> هي عدد الأحداث المقبولة وآخر هندسة لكل حدث بعد التحقق. لا يقدّم هذا السجل دائمًا الدولة أو مساحة الغمر أو الشدة؛ عند غيابها لا يستنتجها الموقع.</p></div>
       </section>
 
-      <footer className="site-footer"><a className="footer-brand" href="#top"><Orbit size={17} /> مِرصد</a><div className="footer-meta"><span>البيانات والمصادر: NASA – National Aeronautics and Space Administration</span><span>جميع الحقوق محفوظة لمروان أسامه محمد رفاعي</span><span>عن المطور: مروان أسامه محمد رفاعي من جهينه</span></div><div className="footer-links"><a href={EONET_CATEGORY_URL} target="_blank" rel="noreferrer">EONET</a><a href={GIBS_INFO_URL} target="_blank" rel="noreferrer">GIBS</a></div></footer>
+      <footer className="site-footer"><a className="footer-brand" href="#top"><Orbit size={17} /> مِرصد</a><div className="footer-meta"><span>مصدر سجل الفيضانات: NASA EONET</span><span>© جميع الحقوق محفوظة لمروان أسامه محمد رفاعي</span><span>عن المطور: مروان أسامه محمد رفاعي من جهينه</span></div><div className="footer-links"><a href={EONET_CATEGORY_URL} target="_blank" rel="noreferrer">EONET</a><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a></div></footer>
     </main>
   );
 }
