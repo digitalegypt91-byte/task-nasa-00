@@ -41,7 +41,6 @@ export default function App() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState(null);
-  const [satellite, setSatellite] = useState(true);
   const imageryDate = useMemo(getImageryDate, []);
   const events = data?.events ?? [];
   const latestEvent = getLatestEvent(events);
@@ -132,7 +131,7 @@ export default function App() {
         {status === 'loading' && !data && <div className="loading-strip"><span className="loading-line" /><span>جارٍ تحميل أرشيف NASA EONET…</span></div>}
 
         <div className="map-layout">
-          <FloodMap events={mapEvents} selected={selected} onSelect={setSelected} satellite={satellite} onToggleSatellite={() => setSatellite((value) => !value)} imageryDate={imageryDate} />
+          <FloodMap events={mapEvents} selected={selected} onSelect={setSelected} imageryDate={imageryDate} />
           <aside className="map-rail">
             <div className="rail-heading"><div><span className="eyebrow">الطبقة النشطة</span><h3>أحداث الفيضانات</h3></div><span className="rail-count">{status === 'ready' ? events.length.toLocaleString('ar') : '—'}</span></div>
             <div className="rail-source"><span className="source-emblem"><Waves size={17} /></span><div><strong>NASA EONET</strong><small>سجل أحداث طبيعية · تصنيف Floods</small></div><a href={EONET_CATEGORY_URL} target="_blank" rel="noreferrer" aria-label="تعريف تصنيف الفيضانات"><ExternalLink size={14} /></a></div>
@@ -165,7 +164,7 @@ export default function App() {
         <div className="raw-note"><div className="raw-note-icon"><Activity size={17} /></div><p><strong>البيانات الخام</strong> هي الأحداث والهندسة والتواريخ التي أرجعها NASA EONET. <strong>المعلومات المعروضة</strong> هي عدد الأحداث المقبولة وآخر هندسة لكل حدث بعد التحقق. لا يقدّم هذا السجل دائمًا الدولة أو مساحة الغمر أو الشدة؛ عند غيابها لا يستنتجها الموقع.</p></div>
       </section>
 
-      <footer className="site-footer"><a className="footer-brand" href="#top"><Orbit size={17} /> مِرصد</a><span>البيانات والمصادر: NASA – National Aeronautics and Space Administration</span><div><a href={EONET_CATEGORY_URL} target="_blank" rel="noreferrer">EONET</a><a href={GIBS_INFO_URL} target="_blank" rel="noreferrer">GIBS</a></div></footer>
+      <footer className="site-footer"><a className="footer-brand" href="#top"><Orbit size={17} /> مِرصد</a><div className="footer-meta"><span>البيانات والمصادر: NASA – National Aeronautics and Space Administration</span><span>جميع الحقوق محفوظة لمروان أسامه محمد رفاعي</span><span>عن المطور: مروان أسامه محمد رفاعي من جهينه</span></div><div className="footer-links"><a href={EONET_CATEGORY_URL} target="_blank" rel="noreferrer">EONET</a><a href={GIBS_INFO_URL} target="_blank" rel="noreferrer">GIBS</a></div></footer>
     </main>
   );
 }
