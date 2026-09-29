@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { CircleHelp, LocateFixed, Map, Minus, Plus, X } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { CircleHelp, LocateFixed, Minus, Plus, Satellite, X } from 'lucide-react';
 import L from 'leaflet';
 import { GeoJSON, MapContainer, TileLayer, ZoomControl, useMap } from 'react-leaflet';
 import { getCoordinates } from '../data/eonet.js';
@@ -20,6 +20,7 @@ function formatDate(value) {
 }
 
 export default function FloodMap({ events, selected, onSelect }) {
+  const [tilesFailed, setTilesFailed] = useState(false);
   const collection = useMemo(() => ({
     type: 'FeatureCollection',
     features: events.map((event) => event.feature),
@@ -29,11 +30,13 @@ export default function FloodMap({ events, selected, onSelect }) {
 
   return (
     <section className="map-frame" aria-label="الخريطة العالمية لأحداث الفيضانات">
-      <MapContainer center={[18, 8]} zoom={2} minZoom={2} maxZoom={9} zoomControl={false} worldCopyJump>
+      <MapContainer center={[18, 8]} zoom={2} minZoom={2} maxZoom={19} zoomControl={false} worldCopyJump>
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution="Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community"
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+          maxNativeZoom={19}
           maxZoom={19}
+          eventHandlers={{ tileerror: () => setTilesFailed(true) }}
         />
         {events.length > 0 && (
           <GeoJSON
@@ -60,8 +63,10 @@ export default function FloodMap({ events, selected, onSelect }) {
       </MapContainer>
 
       <div className="map-topline">
-        <div className="map-label"><span className="map-label-mark"><Map size={16} /></span><span>الخريطة المرجعية</span><span className="map-label-separator">/</span><span>العالم</span></div>
+        <div className="map-label"><span className="map-label-mark"><Satellite size={16} /></span><span>صور الأقمار الصناعية</span><span className="map-label-separator">/</span><span>العالم</span></div>
       </div>
+
+      {tilesFailed && <div className="map-tile-error" role="alert">تعذر تحميل صورة القمر الصناعي. تظل نقاط الأحداث وبقية بيانات الموقع متاحة.</div>}
 
       <div className="map-coordinate-note"><LocateFixed size={14} /> {selectedCoordinates ? `${selectedCoordinates[1].toFixed(3)}° ، ${selectedCoordinates[0].toFixed(3)}°` : 'اسحب الخريطة لاستكشاف العالم'}</div>
 
@@ -91,16 +96,16 @@ export default function FloodMap({ events, selected, onSelect }) {
             <strong>{selected.history.length.toLocaleString('ar')}</strong>
           </div>
           <div className="detail-note">المساحة والشدة والدولة لا تظهر إلا إذا أوردها سجل الحدث نفسه.</div>
-          {selected.sources.map((source) => (
-            <a className="detail-source-link" href={source.url} target="_blank" rel="noreferrer" key={source.url}>
-              المصدر الأصلي للحدث <span>{source.id || 'رابط المصدر'}</span>
-            </a>
+          {selected.sources.map((source, index) => (
+            <div className="detail-source-link" key={`${source.id || 'source'}-${index}`}>
+              المصدر الأصلي للحدث <span>{source.id || 'NASA EONET'}</span>
+            </div>
           ))}
-          {selected.link && <a className="detail-record-link" href={selected.link} target="_blank" rel="noreferrer">فتح سجل NASA الرسمي <span>↗</span></a>}
+          <div className="map-footnote"><span>Esri World Imagery</span><span>صورة فضائية تفاعلية</span></div>
         </aside>
       )}
 
-      <div className="map-footnote"><span>OpenStreetMap · الخريطة المرجعية</span></div>
+      <div className="map-footnote"><span>Esri World Imagery</span><span>صورة فضائية تفاعلية</span></div>
     </section>
   );
 }

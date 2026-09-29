@@ -99,4 +99,3 @@ function findFirstPosition(value) {
 
 export const EONET_CATEGORY_URL = 'https://eonet.gsfc.nasa.gov/api/v3/categories/floods';
 export const EONET_API_URL = 'https://eonet.gsfc.nasa.gov/api/v3/events';
-export const GIBS_INFO_URL = 'https://www.earthdata.nasa.gov/data/tools/gibs';

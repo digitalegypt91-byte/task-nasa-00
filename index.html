@@ -4,14 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#071c20" />
-    <meta name="description" content="منصة عربية لاستكشاف سجل أحداث الفيضانات من NASA EONET وصور الأرض من NASA GIBS." />
+    <meta name="description" content="منصة عربية لاستكشاف سجل أحداث الفيضانات من NASA EONET على صور أقمار صناعية عالية الدقة." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
     <title>مِرصد | الفيضانات من الفضاء</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <main style="min-height:100vh;display:grid;place-items:center;padding:24px;box-sizing:border-box;background:#071c20;color:#f4f0e7;font-family:Arial,sans-serif;text-align:center">
+        <section style="max-width:560px;border-top:2px solid #ff765f;padding:28px 8px">
+          <p style="color:#9cafa9;font-size:12px">NASA OPEN DATA</p>
+          <h1 style="font-size:28px;font-weight:500">جهّز نسخة مِرصد المستقلة</h1>
+          <p style="color:#c1cbc5;line-height:1.9">أنشئ نسخة HTML مستقلة مرة واحدة، ثم افتح الملف الناتج مباشرة دون خادم:</p>
+          <pre style="direction:ltr;display:inline-block;padding:14px 20px;background:#10292b;color:#a8d8c7;text-align:left;line-height:1.8">npm install<br>npm run build<br><br>dist/index.html</pre>
+        </section>
+      </main>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

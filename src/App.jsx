@@ -1,7 +1,31 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Activity, ArrowDownLeft, ArrowUpLeft, Clock3, ExternalLink, Globe2, Orbit, RefreshCw, Satellite, Waves } from 'lucide-react';
+import { Component, useEffect, useMemo, useState } from 'react';
+import { Activity, ArrowDownLeft, ArrowUpLeft, Clock3, Globe2, Orbit, RefreshCw, Satellite, Waves } from 'lucide-react';
 import FloodMap from './components/FloodMap.jsx';
-import { EONET_API_URL, EONET_CATEGORY_URL, fetchFloodEvents, getLatestEvent } from './data/eonet.js';
+import { fetchFloodEvents, getLatestEvent } from './data/eonet.js';
+
+class MapErrorBoundary extends Component {
+  state = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error) {
+    console.error('Flood map failed to render:', error);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="map-frame map-error-panel" role="alert">
+          <div><strong>تعذر تحميل الخريطة</strong><span>باقي بيانات الموقع متاحة. تحقق من الاتصال ثم أعد المحاولة.</span></div>
+          <button onClick={() => this.setState({ hasError: false })}>إعادة المحاولة</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function formatTime(value) {
   if (!value) return '—';
@@ -48,7 +72,7 @@ export default function App() {
       setStatus('ready');
       setSelected((current) => current ? result.events.find((event) => event.id === current.id) ?? null : null);
     } catch (cause) {
-      if (cause.name === 'AbortError') return;
+      if (cause?.name === 'AbortError') return;
       setData(null);
       setSelected(null);
       setError('تعذر تحميل سجل الفيضانات التاريخي من NASA. يرجى المحاولة مرة أخرى.');
@@ -65,7 +89,7 @@ export default function App() {
         setData(result);
         setStatus('ready');
       } catch (cause) {
-        if (cause.name === 'AbortError') return;
+        if (cause?.name === 'AbortError') return;
         setData(null);
         setSelected(null);
         setError('تعذر تحميل سجل الفيضانات التاريخي من NASA. يرجى المحاولة مرة أخرى.');
@@ -88,7 +112,7 @@ export default function App() {
           <span className="brand-word">مِرصد<span> / EARTH INTELLIGENCE</span></span>
         </a>
         <nav className="main-nav" aria-label="التنقل الرئيسي">
-          <a href="#map">الخريطة</a><a href="#sources">مصادر البيانات</a><a href="#method">المنهجية</a>
+          <a href="#map">الخريطة</a><a href="#sources">مصادر البيانات</a><a href="#method">المنهجية</a><a href="#developer">عن المطور</a>
         </nav>
         <StatusPill status={status} fetchedAt={data?.fetchedAt} onRetry={loadData} />
       </header>
@@ -97,7 +121,7 @@ export default function App() {
         <div className="hero-copy">
           <div className="hero-kicker"><span className="kicker-line" /> أرشيف الأرض · NASA OPEN DATA</div>
           <h1>راقب الفيضانات<br /><span>من الفضاء.</span></h1>
-          <p>استكشف أرشيف أحداث الفيضانات المكتملة في NASA EONET على خريطة OpenStreetMap المرجعية.</p>
+          <p>استكشف أرشيف أحداث الفيضانات المكتملة في NASA EONET على صور أقمار صناعية عالية الدقة.</p>
           <a className="hero-action" href="#map">استكشف الخريطة <ArrowDownLeft size={16} /></a>
         </div>
         <div className="hero-aside" aria-label="بيانات تعريف المنصة">
@@ -124,10 +148,10 @@ export default function App() {
         {status === 'loading' && !data && <div className="loading-strip"><span className="loading-line" /><span>جارٍ تحميل أرشيف NASA EONET…</span></div>}
 
         <div className="map-layout">
-          <FloodMap events={mapEvents} selected={selected} onSelect={setSelected} />
+          <MapErrorBoundary><FloodMap events={mapEvents} selected={selected} onSelect={setSelected} /></MapErrorBoundary>
           <aside className="map-rail">
             <div className="rail-heading"><div><span className="eyebrow">الطبقة النشطة</span><h3>أحداث الفيضانات</h3></div><span className="rail-count">{status === 'ready' ? events.length.toLocaleString('ar') : '—'}</span></div>
-            <div className="rail-source"><span className="source-emblem"><Waves size={17} /></span><div><strong>NASA EONET</strong><small>سجل أحداث طبيعية · تصنيف Floods</small></div><a href={EONET_CATEGORY_URL} target="_blank" rel="noreferrer" aria-label="تعريف تصنيف الفيضانات"><ExternalLink size={14} /></a></div>
+            <div className="rail-source"><span className="source-emblem"><Waves size={17} /></span><div><strong>NASA EONET</strong><small>سجل أحداث طبيعية · تصنيف Floods</small></div></div>
             {status === 'loading' && <div className="rail-state"><span className="mini-spinner" /> جارٍ تحميل السجل التاريخي من المصدر…</div>}
             {status === 'error' && <div className="rail-state rail-error">تعذر الاتصال بالمصدر. لا توجد نتائج معروضة.</div>}
             {status === 'ready' && events.length === 0 && <div className="rail-empty"><span className="empty-index">NO RECORDS</span><strong>لا توجد أحداث في الأرشيف</strong><p>لم يُرجع المصدر أحداث فيضانات مسجلة ضمن السجل المتاح.</p><span className="empty-rule" /></div>}
@@ -135,14 +159,14 @@ export default function App() {
             <div className="rail-bottom"><span className="rail-pulse" /><span>النقاط تمثل آخر هندسة مسجلة للحدث، لا مساحة الغمر.</span></div>
           </aside>
         </div>
-        <div className="map-legend"><span className="legend-dot" /><span>حدث مصنف كفيضان في EONET</span><span className="legend-divider" /><span>OpenStreetMap خريطة مرجعية فقط</span></div>
+        <div className="map-legend"><span className="legend-dot" /><span>حدث مصنف كفيضان في EONET</span><span className="legend-divider" /><span className="legend-image"><Satellite size={13} /></span><span>صور Esri الفضائية للسياق البصري</span></div>
       </section>
 
       <section className="trust-section" id="sources">
         <div className="trust-title"><span className="eyebrow">شفافية المصدر</span><h2>مصادر البيانات</h2><p>سجل الفيضانات والخريطة المرجعية مصدران منفصلان، والخريطة ليست مصدرًا لتصنيف الأحداث.</p></div>
         <div className="source-grid">
-          <article className="source-card"><div className="source-card-top"><span className="source-number">01</span><span className="source-card-icon"><Waves size={18} /></span></div><h3>NASA EONET</h3><p>أرشيف أحداث الفيضانات المكتملة؛ يعرض الموقع هندسة الحدث وتاريخها وروابط الجهات الأصلية التي يوردها السجل.</p><div className="source-meta"><span>النوع</span><strong>أحداث مكانية · Floods</strong></div><div className="source-meta"><span>آخر جلب</span><strong>{status === 'ready' ? formatTime(data.fetchedAt) : 'لا توجد استجابة ناجحة'}</strong></div><a href={EONET_API_URL} target="_blank" rel="noreferrer">واجهة الأحداث الرسمية <ExternalLink size={14} /></a></article>
-          <article className="source-card source-card-map"><div className="source-card-top"><span className="source-number">02</span><span className="source-card-icon"><Globe2 size={18} /></span></div><h3>OpenStreetMap</h3><p>خريطة مرجعية لتحديد المواقع والسياق الجغرافي؛ لا تصنّف الفيضانات ولا توفر بيانات الأحداث.</p><div className="source-meta"><span>الاستخدام</span><strong>خلفية جغرافية فقط</strong></div><div className="source-meta"><span>الإسناد</span><strong>© OpenStreetMap contributors</strong></div><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">حقوق واستخدام الخريطة <ExternalLink size={14} /></a></article>
+          <article className="source-card"><div className="source-card-top"><span className="source-number">01</span><span className="source-card-icon"><Waves size={18} /></span></div><h3>NASA EONET</h3><p>أرشيف أحداث الفيضانات المكتملة؛ يعرض الموقع هندسة الحدث وتاريخها ومعرّفات الجهات الأصلية التي يوردها السجل.</p><div className="source-meta"><span>النوع</span><strong>أحداث مكانية · Floods</strong></div><div className="source-meta"><span>آخر جلب</span><strong>{status === 'ready' ? formatTime(data.fetchedAt) : 'لا توجد استجابة ناجحة'}</strong></div><div className="source-attribution">NASA Earth Observatory Natural Event Tracker</div></article>
+          <article className="source-card source-card-map"><div className="source-card-top"><span className="source-number">02</span><span className="source-card-icon"><Satellite size={18} /></span></div><h3>Esri World Imagery</h3><p>خريطة فضائية عالية الدقة للتعرف على تفاصيل سطح الأرض، وتُستخدم كخلفية مكانية للأحداث لا كتصنيف للفيضانات.</p><div className="source-meta"><span>نوع الطبقة</span><strong>صور أقمار صناعية مرئية</strong></div><div className="source-meta"><span>الاستخدام</span><strong>خلفية تفاعلية حتى مستوى محلي</strong></div><div className="source-attribution">Esri · Maxar · Earthstar Geographics</div></article>
         </div>
       </section>
 
@@ -157,7 +181,13 @@ export default function App() {
         <div className="raw-note"><div className="raw-note-icon"><Activity size={17} /></div><p><strong>البيانات الخام</strong> هي الأحداث والهندسة والتواريخ التي أرجعها NASA EONET. <strong>المعلومات المعروضة</strong> هي عدد الأحداث المقبولة وآخر هندسة لكل حدث بعد التحقق. لا يقدّم هذا السجل دائمًا الدولة أو مساحة الغمر أو الشدة؛ عند غيابها لا يستنتجها الموقع.</p></div>
       </section>
 
-      <footer className="site-footer"><a className="footer-brand" href="#top"><Orbit size={17} /> مِرصد</a><div className="footer-meta"><span>مصدر سجل الفيضانات: NASA EONET</span><span>© جميع الحقوق محفوظة لمروان أسامه محمد رفاعي</span><span>عن المطور: مروان أسامه محمد رفاعي من جهينه</span></div><div className="footer-links"><a href={EONET_CATEGORY_URL} target="_blank" rel="noreferrer">EONET</a><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a></div></footer>
+      <section className="developer-section" id="developer" aria-labelledby="developer-title">
+        <span className="developer-mark"><Orbit size={22} /></span>
+        <div className="developer-copy"><span className="eyebrow">بيانات المطور</span><h2 id="developer-title">عن المطور</h2><strong>مروان أسامه محمد رفاعي</strong><p>من جهينة، سوهاج</p></div>
+        <span className="developer-index">مِرصد · NASA OPEN DATA</span>
+      </section>
+
+      <footer className="site-footer"><a className="footer-brand" href="#top"><Orbit size={17} /> مِرصد</a><span className="footer-sources">سجل الفيضانات: NASA EONET · الخريطة الفضائية: Esri World Imagery</span><span className="copyright">جميع الحقوق محفوظة لمروان أسامه محمد رفاعي</span></footer>
     </main>
   );
 }
