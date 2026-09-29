@@ -16,7 +16,7 @@
 
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; background: var(--ink); }
-body { margin: 0; min-width: 320px; background: var(--ink); }
+body { margin: 0; min-width: 0; background: var(--ink); }
 button, a { font: inherit; }
 button { color: inherit; }
 a { color: inherit; text-decoration: none; }
